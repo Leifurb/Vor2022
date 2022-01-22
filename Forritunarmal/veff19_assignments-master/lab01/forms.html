@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Forms</title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <form action= submitEval.php method="post" target="_blank">
+            <fieldset>
+                <legend>Personal information:</legend>
+                <label> for="first">First name:</label>
+                <input type="text" name="first">
+
+                <br>
+
+                <label> for="last">Last name:</label>
+                <input type="text" name="last">
+
+            <br>
+
+            <label for="ssn">Social Security Number:</label>
+            <input type="text" name="ssn">
+            <br>
+            <p>Gender:</p>
+            <input type="radio" name="male">Male
+            <br>
+            <input type="radio" name="female">Female
+            <br>
+            <input type="radio" name="Other">Other
+
+            </fieldset>
+
+            <fieldset>
+                <legend>Course context:</legend>
+                <label for="uni">University</label>
+                <input type="text" id="uni" value="RU" disabled>
+                <br>
+                <label for="school"> School: </label>
+                <select id="school" disabled> 
+                    <option value="compsci" selected> Computer Science</option>
+                    <option value="buisness">Buisness</option>
+                </select>
+
+                <fieldset>
+                    <legend>Which lectures did you attend?</legend>
+                    <input type="checkbox" value="L1: Into">L1: Introduction
+                    <br>
+                    <input type="checkbox" value="L1: Networks">L1: Networks
+                    <br>
+                    <input type="checkbox" value="L1: HTML">L1: HTML
+                </fieldset>
+
+                <fieldset>
+                    <legend>Please describe your overall impression of the course</legend>
+                    <textarea rows="10" cols="50">My impression of this coutse is...</textarea>
+                </fieldset>
+
+                <input type="submit" value="Submit button">
+            </fieldset>
+        </form>
+</html>
