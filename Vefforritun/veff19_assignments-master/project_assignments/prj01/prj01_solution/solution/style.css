@@ -1,0 +1,134 @@
+body {
+    font-family: "Arsenal";
+}
+
+img {
+    width:100%;
+}
+
+button {
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+form { 
+    margin:auto;
+    max-width:300px;
+}
+
+a {
+    color: black;
+}
+
+#bodyContent {
+    width:100%;
+    text-align:center;
+    margin-top:20px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+#aboutUs {
+    text-align: justify;
+    max-width: 400px
+}
+
+#imprint {
+    text-align: right;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    color:#000000;
+    background-color:#D3D4C4;
+    width: 85%;
+    max-width:1200px;
+    margin:auto;
+}
+
+.p5 {
+    padding:5px;
+}
+
+.p10 {
+    padding:10px;
+}
+
+.p20 {
+    padding: 20px;
+}
+
+.foodBox {
+    width: 30%;
+    margin-bottom: 20px;
+    text-align: center;
+    display: inline-block;
+}
+
+.footerBox {
+    width:40%;
+    float:left;
+}
+
+.roundCornerBox {
+    background-color: #D3D4C4;
+    border-radius: 10px;
+    border: 2px solid #000000;
+}
+
+.headerItem {
+    padding-left:2em;
+    padding-right:2em;
+    font-size:1.5em;
+}
+
+.headerAlt {
+    display:none;
+}
+
+.noDeco {
+    text-decoration: none;
+}
+
+
+
+@media only screen and (max-width: 1200px) {
+    .foodBox {
+        width:46%;
+        display: inline-block;
+        margin-bottom:20px;
+        text-align:center;
+    }
+
+    .footerBox {
+        width:100%;
+        float:left;
+    }
+}
+
+@media only screen and (max-width: 850px) {
+    .foodBox {
+        width:95%;
+        display: inline-block;
+        margin-bottom:20px;
+        text-align:center;
+    }
+
+    .footerBox {
+        width:100%;
+        float:left;
+    }
+
+    .headerItem {
+        display:none;
+    }
+
+    .headerAlt {
+        display:inline;
+        margin-left:auto;
+        margin-right:auto;
+        font-size:4em;
+    }
+  }

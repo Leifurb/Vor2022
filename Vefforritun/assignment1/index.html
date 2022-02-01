@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <title>Piano</title>
+</head>
+<body>
+    <div id="container">
+        <div id="controler">
+            <div>
+                <label for="tune">Tune:</label>
+                <select name="tune" id="tune">
+                  <option value="furelise" selected>Für Elise</option>
+                  <option value="thegodfather">The Godfather</option>
+                  <option value="sevannationarmy">Seven Nation Army</option>
+                </select> 
+
+                <button>
+                    <img src="images/play.png" alt="Play button">
+                </button>
+            </div>
+            <div>
+                <label>Record:</label>
+                <button>
+                    <img src="images/record.png" alt="Record button">
+                </button>
+                <button>
+                    <img src="images/stop.png" alt="Stop button">
+                </button>
+            </div>
+        </div>
+        <div id="piano">
+            <div class="pianoTileGroup threeWhiteTiles">
+                <button class="pianoTile whiteTile">
+                    <span>C4</span>
+                    <span>(a)</span>
+                </button>
+                <button class="pianoTile blackTile" >
+                    <span>C#4</span>
+                    <span>(w)</span>
+                </button>
+                <button class="pianoTile whiteTile">
+                    <span>D4</span>
+                    <span>(s)</span>
+                </button>
+                <button class="pianoTile blackTile">
+                    <span>D#4</span>
+                    <span>(e)</span>
+                </button>
+                <button class="pianoTile whiteTile">
+                    <span>E4</span>
+                    <span>(d)</span>
+                </button>
+            </div>
+            <div class="pianoTileGroup fourWhiteTiles">
+                <button class="pianoTile whiteTile">
+                    <span>F4</span>
+                    <span>(f)</span>
+                </button>
+                <button class="pianoTile blackTile" >
+                    <span>F#4</span>
+                    <span>(t)</span>
+                </button>
+                <button class="pianoTile whiteTile">
+                    <span>G4</span>
+                    <span>(g)</span>
+                </button>
+                <button class="pianoTile blackTile" >
+                    <span>G#4</span>
+                    <span>(y)</span>
+                </button>
+                <button class="pianoTile whiteTile">
+                    <span>A4</span>
+                    <span>(h)</span>
+                </button>
+                <button class="pianoTile blackTile">
+                    <span>Bb4</span>
+                    <span>(u)</span>
+                </button>
+                <button class="pianoTile whiteTile">
+                    <span>B4</span>
+                    <span>(j)</span>
+                </button>
+            </div>
+            <div class="pianoTileGroup threeWhiteTiles">
+                <button class="pianoTile whiteTile">
+                    <span>C5</span>
+                    <span>(k)</span>
+                </button>
+                <button class="pianoTile blackTile" >
+                    <span>C#5</span>
+                    <span>(o)</span>
+                </button>
+                <button class="pianoTile whiteTile">
+                    <span>D5</span>
+                    <span>(l)</span>
+                </button>
+                <button class="pianoTile blackTile">
+                    <span>D#5</span>
+                    <span>(p)</span>
+                </button>
+                <button class="pianoTile whiteTile">
+                    <span>E5</span>
+                    <span>(;)</span>
+                </button>
+            </div>
+        </div>
+        <div id="error">
+            <img src="images/oops.jpg" alt="Opps website screen is to small">
+            <p>This website requires at least 600px screen width.</p>
+        </div>
+    </div>
+</body>
+</html>
