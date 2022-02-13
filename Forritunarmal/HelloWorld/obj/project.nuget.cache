@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "EubwBNPmyszpeGes27dC1Qz0fg4p3YPJ/ZYXydWJEWdKEPEB5dx8pkcnonpmgHJ0eFZFeg8l9/7tEfzwudERFg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\leifu\\OneDrive\\Desktop\\skolivor2022\\Forritunarmal\\HelloWorld\\HelloWorld.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\leifu\\.nuget\\packages\\fsharp.core\\6.0.1\\fsharp.core.6.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
