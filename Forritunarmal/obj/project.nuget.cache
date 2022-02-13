@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "2pkRbmnMykgjJToknj5+S9lBPlqyLgffWew4OiP3WJOukM7eeoVGbBLTEXiqnHjv7Pjk+rpTTdiwUADxmguJdw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\leifu\\OneDrive\\Desktop\\skolivor2022\\Forritunarmal\\Forritunarmal.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\leifu\\.nuget\\packages\\fsharp.core\\6.0.1\\fsharp.core.6.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
