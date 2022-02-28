@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "enter program name, for example ${workspaceFolder}/a.exe",
+            "program": "${workspaceFolder}Forritunarmal/HelloWorld/bin/Debug/net6.0/HelloWorld.dll",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

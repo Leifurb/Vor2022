@@ -20,6 +20,9 @@ function startRecording (note, duration, time) {
     recordon = true;
     recordstart = Tone.now();
     var name = document.getElementById("recordName").value;
+    if (name == '') {
+        name = "Unnamed Tune"
+    }
     recording = {
         "name": name,
         "tune": []
