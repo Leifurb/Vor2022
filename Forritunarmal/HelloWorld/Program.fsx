@@ -353,7 +353,7 @@ let rec nexprToExpr (e : nexpr) : expr =
     | NFst e ->
         match nexprToExpr e with
         | Pair (e1, _) -> e1
-        | _ -> Var(_)<
+        | _ -> Var(_)
     | NSnd e ->
         match nexprToExpr e with
         | Pair (_, e2) ->  e2
