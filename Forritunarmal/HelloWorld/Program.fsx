@@ -1,469 +1,398 @@
-﻿// T-501-FMAL, Spring 2022, Assignment 2
- 
+﻿// T-501-FMAL, Spring 2022, Assignment 3
+
 (*
-STUDENT NAMES HERE: 
- 
-Aðalsteinn Leifs Maríuson
-Leifur Benedikt Baldursson
+STUDENT NAMES HERE: ...
+
+
 *)
- 
- 
-//module Assignment2
- 
-type pattern =
-    | PUnderscore
-    | PVar of string
-    | PPair of pattern * pattern
- 
-type expr =
-    | Var of string
-    | Let of pattern * expr * expr
-    | Pair of expr * expr
-    | Num of int
-    | Plus of expr * expr
-    | Times of expr * expr
- 
-let paren b s = if b then  "(" + s + ")" else s
- 
-let prettyprint (e : expr) : string =
-    let rec prettyprintPattern (p : pattern) (acc : int) : string =
-        match p with
-        | PUnderscore -> "_"
-        | PVar x -> x
-        | PPair (p1, p2) -> paren (1 <= acc) (prettyprintPattern p1 1 + ", " + prettyprintPattern p2 1)
-    let rec prettyprintExpr (e : expr) (acc : int) : string =
-        match e with
-        | Var x -> x
-        | Let (p, erhs, ebody) ->
-             paren (3 <= acc) ("let " + prettyprintPattern p 0 + " = " + prettyprintExpr erhs 2 + " in " + prettyprintExpr ebody 2)
-        | Pair (e1, e2) ->
-             paren (3 <= acc) (prettyprintExpr e1 3 + ", " + prettyprintExpr e2 3)
-        | Num i -> string i
-        | Plus (e1, e2) ->
-             paren (4 <= acc) (prettyprintExpr e1 3 + " + " + prettyprintExpr e2 4)
-        | Times (e1, e2) ->
-             paren (7 <= acc) (prettyprintExpr e1 6 + " * " + prettyprintExpr e2 7)
-    prettyprintExpr e 0
- 
-let rec varsInPattern (p : pattern) : string list =
-    match p with
-    | PUnderscore -> []
-    | PVar x -> [x]
-    | PPair (p1, p2) -> varsInPattern p1 @ varsInPattern p2
- 
-let freeVars (e : expr) : string list =
-    let rec freeVars' e bound =
-        match e with
-        | Var x -> if List.exists (fun y -> x = y) bound then [] else [x]
-        | Let (p, erhs, ebody) ->
-            freeVars' erhs bound @ freeVars' ebody (varsInPattern p @ bound)
-        | Pair (e1, e2) -> freeVars' e1 bound @ freeVars' e2 bound
-        | Num _ -> []
-        | Plus (e1, e2) -> freeVars' e1 bound @ freeVars' e2 bound
-        | Times (e1, e2) -> freeVars' e1 bound @ freeVars' e2 bound
-    freeVars' e []
- 
-let freshVar (root : string) (used : string list) : string =
-    let rec freshVar' counter =
-        let candidate = if counter = 0 then root else sprintf "%s%i" root counter
-        if List.exists (fun x -> candidate = x) used
-        then freshVar' (counter + 1)
-        else candidate
-    freshVar' 0
- 
- 
-let rec checkPattern (p : pattern) : bool =
-    let rec checkPattern' seen p =
-        match p with
-        | PUnderscore -> Some seen
-        | PVar x -> if List.exists (fun y -> x = y) seen then None else Some (x :: seen)
-        | PPair (p1, p2) ->
-            match checkPattern' seen p1 with
-            | None -> None
-            | Some seen -> checkPattern' seen p2
-    checkPattern' [] p <> None
- 
- 
+
+module Assignment3
+
+// (You can ignore this line, it stops F# from printing some messages
+// about references in some cases.)
+#nowarn "3370";;
+
 ////////////////////////////////////////////////////////////////////////
 // Problem 1                                                          //
 ////////////////////////////////////////////////////////////////////////
- 
-// (Write the function checkAllPatterns.)
- 
-let rec checkAllPatterns (e : expr) : bool =
-    match e with
-    | Let (p, e1, e2) -> checkPattern(p) && checkAllPatterns(e1) && checkAllPatterns(e2)
-    | Pair (e1, e2) | Plus (e1, e2) | Times (e1, e2) -> checkAllPatterns(e1) && checkAllPatterns(e2)
-    | _ -> true
- 
- 
-type token =
-    | NAME of string
-    | LET | EQUAL | IN
-    | INT of int
-    | PLUS | TIMES
-    | LPAR | RPAR
-    | COMMA | UNDERSCORE
-    | ERROR of char
- 
- 
-let string2Chars (s : string) : char list =
-    let rec helper cs i =
-        if i = 0 then cs else let i = i - 1 in helper (s.[i] :: cs) i
-    helper [] (String.length s)
-let isDigit c = '0' <= c && c <= '9'
-let digit2Int (c : char) = int c - int '0'
-let isLowercaseLetter c = 'a' <= c && c <= 'z'
-let isUppercaseLetter c = 'A' <= c && c <= 'Z'
-let isLetter c = isLowercaseLetter c || isUppercaseLetter c
-let word2Token (s : string) : token =
-    match s with
-    | "let" -> LET
-    | "in"  -> IN
-    | _     -> NAME s
- 
- 
- 
+
+(* ANSWER 1 HERE:
+   (i)
+
+  (ii)
+
+*)
+
+
+
 ////////////////////////////////////////////////////////////////////////
 // Problem 2                                                          //
 ////////////////////////////////////////////////////////////////////////
- 
-// (Modify the function tokenize to handle commas and underscores.) 
- 
-let rec tokenize (cs : char list) : token list =
-    match cs with
-    | [] -> []
-    | '+'::cs  -> PLUS :: tokenize cs
-    | '*'::cs  -> TIMES :: tokenize cs
-    | '='::cs  -> EQUAL :: tokenize cs
-    | ' '::cs  -> tokenize cs
-    | '\t'::cs -> tokenize cs
-    | '\n'::cs -> tokenize cs
-    | '('::cs  -> LPAR :: tokenize cs
-    | ')'::cs  -> RPAR :: tokenize cs
-    | ','::cs  -> COMMA :: tokenize cs
-    | '_'::cs  -> UNDERSCORE :: tokenize cs
-    | c::cs when isDigit c -> tokenizeInt cs (digit2Int c)
-    | c::cs when isLowercaseLetter c -> tokenizeWord cs (string c)
-    | c::cs -> ERROR c :: tokenize cs
-and tokenizeInt cs (acc : int) =
-    match cs with
-    | c::cs when isDigit c -> tokenizeInt cs (acc * 10 + digit2Int c)
-    | _ -> INT acc :: tokenize cs
-and tokenizeWord cs (acc : string) =
-    match cs with
-    | c::cs when isLetter c || isDigit c -> tokenizeWord cs (acc + string c)
-    | _ -> word2Token acc :: tokenize cs
- 
-let lex s = tokenize (string2Chars s)
- 
- 
+
+// fun1: ’a -> (’a -> ’b) -> ’b
+let fun1 x k = failwith "Not implemented"
+
+// fun2: (’a -> ’b) -> ((’a -> ’c) -> ’d) -> (’b -> ’c) -> ’d
+let fun2 f t k = failwith "Not implemented"
+
+// fun3: (’a -> ’b -> ’c) -> ’a * ’b -> ’c
+let fun3 f (x, y) = failwith "Not implemented"
+
+// fun4: (’a -> ’b -> ’a) -> ’a * ’b -> ’a
+let fun4 f (x, y) = failwith "Not implemented"
+
+// fun5: (’a -> ’a -> ’a) -> ’a * ’a -> ’a
+let fun5 f (x, y) = failwith "Not implemented"
+
 ////////////////////////////////////////////////////////////////////////
 // Problem 3                                                          //
 ////////////////////////////////////////////////////////////////////////
- 
-// (Modify the functions parsePattern and parseSimplePattern
-// to handle a prefix of the token list corresponding to a pair resp.
-// the underscore.)
- 
-let rec parseExpr (ts : token list) : expr * token list =
-    let e1, ts = parseSum ts
-    match ts with
-    | COMMA :: ts ->
-        let e2, ts = parseSum ts
-        Pair (e1, e2), ts
-    | _ -> e1, ts
-and parseSum (ts : token list) : expr * token list =
-    let e1, ts = parseSummand ts
-    match ts with
-    | PLUS :: ts ->
-        let e2, ts = parseSum ts
-        Plus (e1, e2), ts
-    | _ -> e1, ts
-and parseSummand (ts : token list) : expr * token list =
-    let e1, ts = parseFactor ts
-    match ts with
-    | TIMES :: ts ->
-        let e2, ts = parseSummand ts
-        Times (e1, e2), ts
-    | _ -> e1, ts
-and parseFactor (ts : token list) : expr * token list =
-    match ts with
-    | NAME x :: ts -> (Var x, ts)
-    | LET :: ts ->
-        let p, ts = parsePattern ts
-        match ts with
-        | EQUAL :: ts ->
-            let (erhs, ts) = parseExpr ts
-            match ts with
-            | IN :: ts ->
-                let ebody, ts = parseExpr ts
-                Let (p, erhs, ebody), ts
-            | _ -> failwith "let without in"
-        | _ -> failwith "let without equals sign"
-    | INT i :: ts -> Num i, ts
-    | LPAR :: ts ->
-        let e, ts = parseExpr ts
-        match ts with
-        | RPAR :: ts -> e, ts
-        | _ -> failwith "left paren without right paren"
-    | _  -> failwith "not a factor"
-and parsePattern (ts : token list) : pattern * token list =
-    let p1, ts = parseSimplePattern ts;
-    match ts with
-    | COMMA :: ts -> 
-        let p2, ts = parseSimplePattern ts;
-        PPair (p1, p2), ts
-    | _ -> p1, ts
-and parseSimplePattern (ts : token list) : pattern * token list =
-    match ts with
-    | UNDERSCORE :: ts -> PUnderscore, ts
-    | NAME x :: ts -> PVar x, ts
-    | LPAR :: ts ->
-        let p, ts = parsePattern ts
-        match ts with
-        | RPAR :: ts -> p, ts
-        | _ -> failwith "left paren without right paren"
-    | _  -> failwith "not a pattern"
- 
-let parse (ts : token list) : expr =
-    let e, ts = parseExpr ts
-    if ts = [] then e else failwithf "unconsumed tokens"
-let lexParse (s : string) : expr = parse (lex s)
- 
- 
+
+(* ANSWER 3 HERE:
+     (i)
+
+    (ii)
+
+   (iii)
+
+    (iv)
+
+     (v)
+*)
+
+
+
+////////////////////////////////////////////////////////////////////////
+// Some type declarations, do not change these                        //
+////////////////////////////////////////////////////////////////////////
+
+type expr =
+    | Var of string
+    | Let of string * expr * expr
+    | Call of expr * expr
+    | LetFun of string * string * expr * expr
+    | Num of int
+    | Plus of expr * expr
+    | Minus of expr * expr
+    | Times of expr * expr
+    | Divide of expr * expr
+    | Neg of expr
+    | True
+    | False
+    | Equal of expr * expr
+    | Less of expr * expr
+    | ITE of expr * expr * expr
+    | Pair of expr * expr                       // pairing
+    | Fst of expr                               // first component
+    | Snd of expr                               // second component
+type 'a envir = (string * 'a) list
+
+type typ =
+    | TVar of typevar
+    | Int
+    | Bool
+    | Fun of typ * typ
+    | Prod of typ * typ                         // product type
+and typevar = (tvarkind * int) ref
+and tvarkind =
+    | NoLink of string
+    | LinkTo of typ
+
+type typescheme =
+    | TypeScheme of typevar list * typ
+
 type value =
-    | VPair of value * value
-    | VNum of int
-type envir = (string * value) list
- 
-let rec lookup x env =
+    | I of int
+    | B of bool
+    | F of string * string * expr * value envir
+    | P of expr * expr * value envir            // pair closure
+
+////////////////////////////////////////////////////////////////////////
+// Some helper functions, do not change these                         //
+////////////////////////////////////////////////////////////////////////
+
+let rec lookup (x : string) (env : 'a envir) : 'a =
     match env with
     | []          -> failwith (x + " not found")
     | (y, v)::env -> if x = y then v else lookup x env
-let rec erase x env =
-    match env with
-    | []          -> failwith (x + " not found")
-    | (y, v)::env -> if x = y then env else (y, v) :: erase x env
- 
-let addValues (v1 : value) (v2 : value) =
-  match v1, v2 with
-  | VNum i1 , VNum i2 -> VNum (i1 + i2)
-  | _ -> failwith "can only add numbers"
-let mulValues (v1 : value) (v2 : value) =
-  match v1, v2 with
-  | VNum i1 , VNum i2 -> VNum (i1 * i2)
-  | _ -> failwith "can only multiply numbers"
- 
- 
- 
+
+let setTvKind (tv : typevar) (kind : tvarkind) : unit =
+    let _, lvl = !tv
+    tv := kind, lvl
+
+let setTvLevel (tv : typevar) (lvl : int) : unit =
+    let kind, _ = !tv
+    tv := kind, lvl
+
+let rec normType (t : typ) : typ =
+    match t with
+    | TVar tv ->
+        match !tv with
+        | LinkTo t', _ -> let tn = normType t'
+                          setTvKind tv (LinkTo tn); tn
+        | _ -> t
+    |  _ -> t
+
+let rec union xs ys =
+    match xs with
+    | []    -> ys
+    | x::xs -> if List.contains x ys then union xs ys
+               else x :: union xs ys
+
+let rec freeTypeVars (t : typ) : typevar list =
+    match normType t with
+    | TVar tv      -> [tv]
+    | Int          -> []
+    | Bool         -> []
+    | Fun (t1, t2) -> union (freeTypeVars t1) (freeTypeVars t2)
+    | Prod (t1, t2) -> union (freeTypeVars t1) (freeTypeVars t2)
+
+let occursCheck (tv : typevar) (tvs : typevar list) : unit =
+    if List.contains tv tvs then failwith "type error: circularity"
+    else ()
+
+let pruneLevel (maxLevel : int) (tvs : typevar list) : unit =
+    let reducelevel tv =
+        let _, lvl = !tv
+        setTvLevel tv (min lvl maxLevel)
+    List.iter reducelevel tvs
+
+let rec linkVarToType (tv : typevar) (t : typ) : unit =
+    let _, lvl = !tv
+    let tvs = freeTypeVars t
+    occursCheck tv tvs;
+    pruneLevel lvl tvs;
+    setTvKind tv (LinkTo t)
+
+let paren b s = if b then "(" + s + ")" else s
+
+let prettyprintType (t : typ) : string =
+    let rec prettyprintType' t acc =
+        match normType t with
+        | TVar v ->
+            match !v with
+            | NoLink name, _ -> name
+            | _ -> failwith "we should not have ended up here"
+        | Int -> "int"
+        | Bool -> "bool"
+        | Fun (t1, t2) ->
+            let s1 = prettyprintType' t1 true
+            let s2 = prettyprintType' t2 false
+            paren acc (sprintf "%s -> %s" s1 s2)
+        | Prod (t1, t2) ->
+            let s1 = prettyprintType' t1 true
+            let s2 = prettyprintType' t2 true
+            paren acc (sprintf "%s * %s" s1 s2)
+    prettyprintType' t false
+
+let tyvarno : int ref = ref 0
+let newTypeVar (lvl : int) : typevar =
+    let rec mkname i res =
+            if i < 26 then char(97+i) :: res
+            else mkname (i/26-1) (char(97+i%26) :: res)
+    let intToName i = new System.String(Array.ofList('\'' :: mkname i []))
+    tyvarno := !tyvarno + 1;
+    ref (NoLink (intToName (!tyvarno)), lvl)
+
+let rec generalize (lvl : int) (t : typ) : typescheme =
+    let notfreeincontext tv =
+        let _, linkLvl = !tv
+        linkLvl > lvl
+    let tvs = List.filter notfreeincontext (freeTypeVars t)
+    TypeScheme (tvs, t)
+
+let rec copyType (subst : (typevar * typ) list) (t : typ) : typ =
+    match t with
+    | TVar tv ->
+        let rec loop subst =
+            match subst with
+            | (tv', t') :: subst -> if tv = tv' then t' else loop subst
+            | [] -> match !tv with
+                    | NoLink _, _ -> t
+                    | LinkTo t', _ -> copyType subst t'
+        loop subst
+    | Fun (t1,t2) -> Fun (copyType subst t1, copyType subst t2)
+    | Int         -> Int
+    | Bool        -> Bool
+    | Prod (t1, t2) -> Prod (copyType subst t1, copyType subst t2)
+
+let specialize (lvl : int) (TypeScheme (tvs, t)) : typ =
+    let bindfresh tv = (tv, TVar (newTypeVar lvl))
+    match tvs with
+    | [] -> t
+    | _  -> let subst = List.map bindfresh tvs
+            copyType subst t
+
+
+
 ////////////////////////////////////////////////////////////////////////
 // Problem 4                                                          //
 ////////////////////////////////////////////////////////////////////////
- 
-// (Write the function patternMatch.)
- 
-let rec patternMatch (p : pattern) (v : value) (env : envir) : envir =
-    match p with
-    | PPair (p1, p2) -> 
-        match v with
-        | VPair (v1 , v2) -> patternMatch p2 v2 [] @ patternMatch p1 v1 [] @ env
-        | _ -> failwith "expected a pair, but given an int"
-    | PVar var -> (var, v)::env
-    | PUnderscore -> env
- 
-// (Complete the function eval.)
- 
-let rec eval (e : expr) (env : envir) : value =
-    match e with
-    | Var x -> lookup x env
-    | Let (p, erhs, ebody) -> 
-        let v = eval erhs env
-        eval ebody (patternMatch p v [] @ env)
-    | Pair (e1, e2) -> VPair (eval e1 env, eval e2 env)
-    | Num i -> VNum i
-    | Plus (e1, e2) -> addValues (eval e1 env) (eval e2 env)
-    | Times (e1, e2) -> mulValues (eval e1 env) (eval e2 env)
- 
-let run e = eval e []
- 
-type nexpr =
-    | NVar of string
-    | NLet of string * nexpr * nexpr
-    | NPair of nexpr * nexpr
-    | NFst of nexpr
-    | NSnd of nexpr
-    | NNum of int
-    | NPlus of nexpr * nexpr
-    | NTimes of nexpr * nexpr
- 
-let nprettyprint (e : nexpr) : string =
-    let rec nprettyprintExpr (e : nexpr) (acc : int) : string =
-        match e with
-        | NVar x -> x
-        | NLet (x, erhs, ebody) ->
-             paren (3 <= acc) ("let " + x + " = " + nprettyprintExpr erhs 2 + " in " + nprettyprintExpr ebody 2)
-        | NPair (e1, e2) ->
-             paren (3 <= acc) (nprettyprintExpr e1 3 + " , " + nprettyprintExpr e2 3)
-        | NNum i -> string i
-        | NPlus (e1, e2) ->
-             paren (4 <= acc) (nprettyprintExpr e1 3 + " + " + nprettyprintExpr e2 4)
-        | NTimes (e1, e2) ->
-             paren (7 <= acc) (nprettyprintExpr e1 6 + " * " + nprettyprintExpr e2 7)
-        | NFst e -> paren (8 <= acc) ("fst " + nprettyprintExpr e 8)
-        | NSnd e -> paren (8 <= acc) ("snd " + nprettyprintExpr e 8)
-    nprettyprintExpr e 0
- 
-let rec neval (e : nexpr) (env : envir) : value =
-    match e with
-    | NVar x -> lookup x env
-    | NLet (x, erhs, ebody) ->
-         let xval = neval erhs env
-         let env1 = (x , xval) :: env
-         neval ebody env1
-    | NPair (e1, e2) -> VPair (neval e1 env, neval e2 env)
-    | NFst e ->
-        match neval e env with
-        | VPair (v1, v2) -> v1
-        | _ -> failwith "expected a pair"
-    | NSnd e ->
-        match neval e env with
-        | VPair (v1, v2) -> v2
-        | _ -> failwith "expected a pair"
-    | NNum i -> VNum i
-    | NPlus (e1, e2) -> addValues (neval e1 env) (neval e2 env)
-    | NTimes (e1, e2) -> mulValues (neval e1 env) (neval e2 env)
- 
- 
- 
+
+let rec unify (t1 : typ) (t2 : typ) : unit =
+    let t1' = normType t1
+    let t2' = normType t2
+    match t1', t2' with
+    | Int,  Int  -> ()
+    | Bool, Bool -> ()
+    | Fun (t11, t12), Fun (t21, t22) -> unify t11 t21; unify t12 t22
+    | TVar tv1, TVar tv2 ->
+        let _, tv1level = !tv1
+        let _, tv2level = !tv2
+        if tv1 = tv2                then ()
+        else if tv1level < tv2level then linkVarToType tv1 t2'
+                                    else linkVarToType tv2 t1'
+    | TVar tv1, _ -> linkVarToType tv1 t2'
+    | _, TVar tv2 -> linkVarToType tv2 t1'
+    | _, _ -> failwith ("cannot unify " + prettyprintType t1' + " and " + prettyprintType t2')
+
+
+
 ////////////////////////////////////////////////////////////////////////
 // Problem 5                                                          //
 ////////////////////////////////////////////////////////////////////////
- 
-// (i) (Write the function nexprToExpr.)
- 
-let rec nexprToExpr (e : nexpr) : expr = 
+
+let rec infer (e : expr) (lvl : int) (env : typescheme envir) : typ =
     match e with
-    | NVar x -> Var x
-    | NPair (e1, e2) -> Pair (nexprToExpr e1, nexprToExpr e2)
-    | NNum i -> Num i
-    | NPlus (e1, e2) -> Plus (nexprToExpr e1, nexprToExpr e2)
-    | NTimes (e1, e2) -> Times (nexprToExpr e1, nexprToExpr e2)
-    | NLet (p, nrhs, nbody) -> Let (PVar(p), nexprToExpr nrhs, nexprToExpr nbody)
-    | NFst e ->
-        match nexprToExpr e with
-        | Pair (e1, _) -> e1
-        | _ -> Var(_)
-    | NSnd e ->
-        match nexprToExpr e with
-        | Pair (_, e2) ->  e2
-        | _ -> failwith "Expected"
- 
- 
-eval (nexprToExpr (NLet ("x", NPair (NNum 4, NNum 5), NTimes (NFst (NVar "x"), NSnd (NVar "x"))))) [];;
-// val it: value = VNum 20
- 
- 
-eval (nexprToExpr (NFst (NSnd (NFst (NVar "x"))))) ["x", VPair (VPair (VPair (VNum 1, VNum 2), VPair (VNum 3, VNum 4)), VNum 5)]
-// val it: value = VNum 3
- 
- 
-// (ii) (Complete the function bindPattern used by exprToNexpr.)
- 
-let rec bindPattern (p : pattern) (rhs : nexpr) (body : nexpr) : nexpr =
-  match p with
-  | PUnderscore -> body
-  | PVar x -> NLet (x, rhs, body)
-  | PPair (p1, p2) -> failwith "Not implemented"
- 
-let rec exprToNexpr (e : expr) : nexpr =
-  match e with
-  | Var x -> NVar x
-  | Let (p, erhs, ebody) ->
-      let toMatch = freshVar "toMatch" (varsInPattern p @ freeVars ebody)
-      let nrhs = exprToNexpr erhs
-      let nbody = exprToNexpr ebody
-      let boundBody = bindPattern p (NVar toMatch) nbody
-      NLet (toMatch, nrhs, boundBody)
-  | Pair (e1, e2) -> NPair (exprToNexpr e1, exprToNexpr e2)
-  | Num i -> NNum i
-  | Plus (e1, e2) -> NPlus (exprToNexpr e1, exprToNexpr e2)
-  | Times (e1, e2) -> NTimes (exprToNexpr e1, exprToNexpr e2)
- 
- 
- 
- 
- 
-type renvir = (string * int list) list
-type rinstr =
-    | RLoad of string
-    | RStore of string
-    | RErase of string
-    | RNum of int
-    | RAdd
-    | RMul
-    | RPair
-    | RUnpair
-    | RPop
-    | RSwap
-type rcode = rinstr list
-type stack = int list
- 
-let rec reval (inss : rcode) (stk : stack) (renv : renvir) : int =
-    let rec popValue stk =
-        match stk with
-        | 1 :: i :: stk -> [1; i], stk
-        | tag :: stk ->
-            let (vs, stk) = popValues tag stk
-            tag :: vs, stk
-        | _ -> failwith "reval: Too few operands on stack"
-    and popValues tag stk =
-        if tag < 0 then failwith "reval: Negative tag"
-        else if tag = 0 then ([], stk)
-        else
-            let (v, stk) = popValue stk
-            let (vs, stk) = popValues (tag - 1) stk
-            (v @ vs, stk)
- 
-    //printfn "%A" stk
-    match inss, stk with
-    | [], 1 :: i :: _ -> i
-    | [], _ :: i :: _ -> failwith "reval: Result is not a number!"
-    | [], [] -> failwith "reval: No result on stack!"
-    | RLoad x :: inss, stk -> reval inss (lookup x renv @ stk) renv
-    | RStore x :: inss, stk ->
-        let v, stk = popValue stk
-        reval inss stk ((x, v) :: renv)
-    | RErase x :: inss, stk -> reval inss stk (erase x renv)
-    | RNum i :: inss, stk -> reval inss (1 :: i :: stk) renv
-    | RAdd :: inss, 1 :: i2 :: 1 :: i1 :: stk -> reval inss (1 :: (i1+i2) :: stk) renv
-    | RAdd :: inss, _ :: _ :: _ :: _ :: stk -> failwith "reval: expected two numbers"
-    | RMul :: inss, 1 :: i2 :: 1 :: i1 :: stk -> reval inss (1 :: (i1*i2) :: stk) renv
-    | RMul :: inss, _ :: _ :: _ :: _ :: stk -> failwith "reval: expected two numbers"
-    | RPair :: inss, stk -> reval inss (2 :: stk) renv
-    | RUnpair :: inss, 2 :: stk -> reval inss stk renv
-    | RUnpair :: inss, _ :: stk -> failwith "reval: expected a pair"
-    | RPop :: inss, stk ->
-        let _, stk = popValue stk
-        reval inss stk renv
-    | RSwap :: inss, stk ->
-        let v1, stk = popValue stk
-        let v2, stk = popValue stk
-        reval inss (v2 @ v1 @ stk) renv
-    | _ -> failwith "reval: too few operands on stack"
- 
- 
- 
+    | Var x  -> specialize lvl (lookup x env)
+    | Let (x, erhs, ebody) ->
+        let lvl' = lvl + 1
+        let tx = infer erhs lvl' env
+        let env' = (x, generalize lvl tx) :: env
+        infer ebody lvl env'
+    | Call (efun, earg) ->
+        let tf = infer efun lvl env
+        let tx = infer earg lvl env
+        let tr = TVar (newTypeVar lvl)
+        unify tf (Fun (tx, tr)); tr
+    | LetFun (f, x, erhs, ebody) ->
+        let lvl' = lvl + 1
+        let tf = TVar (newTypeVar lvl')
+        let tx = TVar (newTypeVar lvl')
+        let env' = (x, TypeScheme ([], tx))
+                      :: (f, TypeScheme ([], tf)) :: env
+        let tr = infer erhs lvl' env'
+        let () = unify tf (Fun (tx, tr))
+        let env'' = (f, generalize lvl tf) :: env
+        infer ebody lvl env''
+    | Num i -> Int
+    | Plus (e1, e2) ->
+        let t1 = infer e1 lvl env
+        let t2 = infer e2 lvl env
+        unify Int t1; unify Int t2; Int
+    | Minus (e1, e2) ->
+        let t1 = infer e1 lvl env
+        let t2 = infer e2 lvl env
+        unify Int t1; unify Int t2; Int
+    | Times (e1, e2) ->
+        let t1 = infer e1 lvl env
+        let t2 = infer e2 lvl env
+        unify Int t1; unify Int t2; Int
+    | Divide (e1, e2) ->
+        let t1 = infer e1 lvl env
+        let t2 = infer e2 lvl env
+        unify Int t1; unify Int t2; Int
+    | Neg e ->
+        let t = infer e lvl env
+        unify Int t; Int
+    | True  -> Bool
+    | False -> Bool
+    | Equal (e1, e2) ->
+        let t1 = infer e1 lvl env
+        let t2 = infer e2 lvl env
+        unify t1 Int; unify t2 Int;
+        Bool
+    | Less (e1, e2) ->
+        let t1 = infer e1 lvl env
+        let t2 = infer e2 lvl env
+        unify Int t1; unify Int t2; Bool
+    | ITE (e, e1, e2) ->
+        let t1 = infer e1 lvl env
+        let t2 = infer e2 lvl env
+        unify Bool (infer e lvl env); unify t1 t2; t1
+
+    | Pair (e1, e2) -> failwith "Not implemented"
+    | Fst e -> failwith "Not implemented"
+    | Snd e -> failwith "Not implemented"
+
+let inferTop e =
+    tyvarno := 0; prettyprintType (infer e 0 [])
+
+
+
 ////////////////////////////////////////////////////////////////////////
 // Problem 6                                                          //
 ////////////////////////////////////////////////////////////////////////
- 
-(*
-ANSWER 6(i) HERE:
- 
+
+let rec eval (e : expr) (env : value envir) : value =
+    match e with
+    | Var x  ->  lookup x env
+    | Let (x, erhs, ebody) ->
+         let v = eval erhs env
+         let env' = (x, v) :: env
+         eval ebody env'
+    | Call (efun, earg) ->
+         let clo = eval efun env
+         match clo with
+         | F (f, x, ebody, env0) ->
+             let v = eval earg env
+             let env' = (x, v) :: (f, clo) :: env0
+             eval ebody env'
+         | _   -> failwith "expression called not a function"
+    | LetFun (f, x, erhs, ebody) ->
+         let env' = (f, F (f, x, erhs, env)) :: env
+         eval ebody env'
+    | Num i -> I i
+    | Plus  (e1, e2) ->
+         match eval e1 env, eval e2 env with
+         | I i1, I i2 -> I (i1 + i2)
+         | _ -> failwith "argument of + not integers"
+    | Minus  (e1, e2) ->
+         match eval e1 env, eval e2 env with
+         | I i1, I i2 -> I (i1 - i2)
+         | _ -> failwith "arguments of - not integers"
+    | Times (e1, e2) ->
+         match eval e1 env, eval e2 env with
+         | I i1, I i2 -> I (i1 * i2)
+         | _ -> failwith "arguments of * not integers"
+    | Divide (e1, e2) ->
+         match eval e1 env, eval e2 env with
+         | I i1, I i2 ->
+             if i2 = 0 then failwith "division by 0"
+             else I (i1 / i2)
+         | _ -> failwith "arguments of / not integers"
+    | Neg e ->
+         match eval e env with
+         | I i -> I (- i)
+         | _ -> failwith "argument of negation not an integer"
+    | True  -> B true
+    | False -> B false
+    | Equal (e1, e2) ->
+         match eval e1 env, eval e2 env with
+         | I i1, I i2 -> B (i1 = i2)
+         | _ -> failwith "arguments of = not integers"
+    | Less (e1, e2) ->
+         match eval e1 env, eval e2 env with
+         | I i1, I i2 -> B (i1 < i2)
+         | _ -> failwith "arguments of < not integers"
+    | ITE (e, e1, e2) ->
+         match eval e env with
+         | B b -> if b then eval e1 env else eval e2 env
+         | _ -> failwith "guard of if-then-else not a boolean"
+
+    | Pair (e1, e2) -> failwith "Not implemented"
+    | Fst e -> failwith "Not implemented"
+    | Snd e -> failwith "Not implemented"
+
+
+
+////////////////////////////////////////////////////////////////////////
+// Problem 7                                                          //
+////////////////////////////////////////////////////////////////////////
+
+(* ANSWER 7 HERE:
+
 *)
- 
-(*
-ANSWER 6(ii) HERE:
- 
-*)
+
+
+
