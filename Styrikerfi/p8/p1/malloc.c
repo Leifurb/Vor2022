@@ -1,5 +1,7 @@
-#include "malloc.h"
+//adalsteinnm20 leifurb20
 
+#include "malloc.h"
+#include <pthread.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -32,6 +34,8 @@ typedef struct _Block {
 #define HEADER_SIZE sizeof(Block)
 #define INV_HEADER_SIZE_MASK ~((uint64_t)HEADER_SIZE - 1)
 #define ALLOCATED_BLOCK_MAGIC (Block*)(0xbaadf00d)
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * This is the heap you should use.
@@ -72,6 +76,7 @@ static Block *_getNextBlockBySize(const Block *current)
  */
 void dumpAllocator()
 {
+    pthread_mutex_unlock(&mutex);
     Block *current;
 
     printf("All blocks:\n");
@@ -99,6 +104,7 @@ void dumpAllocator()
 
         current = current->next;
     }
+    pthread_mutex_lock(&mutex);
 }
 
 /*
@@ -146,6 +152,7 @@ static void *_allocate(Block **blockLink, uint64_t size)
 
 void *my_malloc(uint64_t size)
 {
+    pthread_mutex_lock(&mutex);
     // Calculate the minimum size of the free block we need to find.
     // We only allocate blocks that are multiples of 16 bytes in size, so we
     // round up the requested size. This potentially wastes some memory but
@@ -153,19 +160,22 @@ void *my_malloc(uint64_t size)
     const uint64_t requestedSize = roundUp(size) + HEADER_SIZE;
     Block *current = _firstFreeBlock;
     Block **link   = &_firstFreeBlock;
-
     while (current) {
         if (current->size >= requestedSize) {
-            return _allocate(link, requestedSize);
+           
+            int *temp = _allocate(link, requestedSize);
+            pthread_mutex_unlock(&mutex);
+            return temp;
         }
-
         // We did not find a large-enough block, yet. Move on to the next one.
         link    = &current->next;
         current = current->next;
-    }
 
+    }
+    //pthread_mutex_unlock(&mutex);
     // We did not find a free block that offers enough space. Return NULL to
     // indicate that the allocation failed.
+    pthread_mutex_unlock(&mutex);
     return NULL;
 }
 
@@ -197,7 +207,9 @@ static void _tryMerge(Block *freeBlock)
 
 void my_free(void *address)
 {
+    pthread_mutex_lock(&mutex);
     if (address == NULL) {
+        pthread_mutex_unlock(&mutex);
         return;
     }
 
@@ -217,21 +229,23 @@ void my_free(void *address)
     // We can find the correct position easily, by comparing the block addresses
     if ((freeBlock == NULL) || (freeBlock > block)) {
         // Insert the block at the front of the freelist
+
         _firstFreeBlock = block;
         block->next = freeBlock;
-
+        
         _tryMerge(block);
     } else {
         // Iterate the free list until we reach its end or find the correct pos
         while ((freeBlock->next != NULL) && (freeBlock->next < block)) {
             freeBlock = freeBlock->next;
-        }
 
+        }
         // Insert block into free list and try to merge with neighbor blocks
         block->next = freeBlock->next;
         freeBlock->next = block;
-
         _tryMerge(block);
         _tryMerge(freeBlock);
     }
+    pthread_mutex_unlock(&mutex);
 }
+
