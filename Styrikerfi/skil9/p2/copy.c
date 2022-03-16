@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
+//ss
 // Intermediate copy buffer. Use this buffer for your read() and write() calls.
 static char _buffer[BUFFER_SIZE];
 
