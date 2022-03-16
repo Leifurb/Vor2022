@@ -6,7 +6,7 @@ STUDENT NAMES HERE: ...
 
 *)
 
-module Assignment3
+//module Assignment3
 
 // (You can ignore this line, it stops F# from printing some messages
 // about references in some cases.)
@@ -30,19 +30,19 @@ module Assignment3
 ////////////////////////////////////////////////////////////////////////
 
 // fun1: ’a -> (’a -> ’b) -> ’b
-let fun1 x k = failwith "Not implemented"
+let fun1 x k = k x
 
 // fun2: (’a -> ’b) -> ((’a -> ’c) -> ’d) -> (’b -> ’c) -> ’d
-let fun2 f t k = failwith "Not implemented"
+let fun2 f t k = k(f(t(k)))
 
 // fun3: (’a -> ’b -> ’c) -> ’a * ’b -> ’c
-let fun3 f (x, y) = failwith "Not implemented"
+let fun3 f (x, y) = f x y 
 
 // fun4: (’a -> ’b -> ’a) -> ’a * ’b -> ’a
-let fun4 f (x, y) = failwith "Not implemented"
+let fun4 f (x, y) = f (f x y) y
 
 // fun5: (’a -> ’a -> ’a) -> ’a * ’a -> ’a
-let fun5 f (x, y) = failwith "Not implemented"
+let fun5 f (x, y) = f(f (f y x) x) y
 
 ////////////////////////////////////////////////////////////////////////
 // Problem 3                                                          //
@@ -244,7 +244,41 @@ let rec unify (t1 : typ) (t2 : typ) : unit =
                                     else linkVarToType tv2 t1'
     | TVar tv1, _ -> linkVarToType tv1 t2'
     | _, TVar tv2 -> linkVarToType tv2 t1'
+    | Prod (t11, t12), Prod(t21, t22) -> unify t11 t21; unify t12 t22
     | _, _ -> failwith ("cannot unify " + prettyprintType t1' + " and " + prettyprintType t2')
+
+let a = ref (NoLink "'a", 0)
+let b = ref (NoLink "'b", 0)
+let c = ref (NoLink "'c", 0)
+let unifyTest t1 t2 =
+  a := (NoLink "'a", 0);
+  b := (NoLink "'b", 0);
+  c := (NoLink "'c", 0);
+  unify t1 t2;
+  prettyprintType t1
+
+unifyTest (Prod (Int, Int)) (Prod (Int, Int))
+// val it: string = "int * int"
+ unifyTest (Prod (Int, Int)) (Prod (Int, Bool))
+// System.Exception: cannot unify int and bool
+ unifyTest (Prod (Bool, Int)) (Prod (Int, Bool))
+// System.Exception: cannot unify bool and int
+ unifyTest (Prod (Int, Int)) (Prod (Int, Prod (Bool, Int)))
+// System.Exception: cannot unify int and bool * int
+ unifyTest (Prod (Prod (Int, Int), Int)) (Prod (Int, Prod (Int, Int)))
+// System.Exception: cannot unify int * int and int
+ unifyTest (TVar a) (Prod (TVar b, TVar c))
+// val it: string = "'b * 'c"
+ unifyTest (TVar a) (Prod (TVar b, TVar a))
+// System.Exception: type error: circularity
+ unifyTest (Prod (TVar a, Bool)) (Prod (Fun (Int, TVar b), TVar c))
+// val it: string = "(int -> 'c) * bool"
+ unifyTest (Prod (TVar a, Bool)) (Prod (Fun (Int, TVar b), TVar a))
+// System.Exception: cannot unify bool and int -> 'c
+ unifyTest (Fun (Prod (TVar a, TVar b), TVar c)) (Fun (TVar c, Prod (Bool, Int)))
+// val it: string = "(bool * int) -> bool * int"
+ unifyTest (Fun (Prod (TVar a, TVar b), TVar a)) (Fun (TVar c, Prod (Bool, Int)))
+// val it: string = "((bool * int) * 'b) -> bool * int"
 
 
 
