@@ -1,0 +1,28 @@
+{
+  "name": "invoicing_backend_retake2021",
+  "version": "1.0.0",
+  "description": "A backend to handle invoices.",
+  "main": "invoicingBackend.js",
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha test/invoicingBackend.test.js",
+    "start": "node invoicingBackend.js",
+    "debug": "node --inspect-brk=9229 invoicingBackend.js"
+  },
+  "keywords": [
+    "Invoices",
+    "REST",
+    "VEFF213",
+    "Final exam"
+  ],
+  "author": "Grischa Liebel",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "chai-http": "^4.3.0",
+    "mocha": "^8.3.2"
+  }
+}

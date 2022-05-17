@@ -1,0 +1,11 @@
+body {
+    background-color: white;
+}
+
+#noteList p{
+    width: 200px;
+    display: inline-block;
+    background-color: gray;
+    margin: 20px
+
+}

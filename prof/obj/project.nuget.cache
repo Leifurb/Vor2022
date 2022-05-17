@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "bnxi6cbD0zBE9dh6XiwF2J1xWXJe/UPbuvOC85wVAjGX6avBrDB+xXcM2RC1uEORvHTmlOHrLMtVpzje1lJExg==",
+  "success": true,
+  "projectFilePath": "c:\\Users\\leifu\\OneDrive\\Desktop\\skolivor2022\\prof\\prof.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\leifu\\.nuget\\packages\\fsharp.core\\6.0.1\\fsharp.core.6.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

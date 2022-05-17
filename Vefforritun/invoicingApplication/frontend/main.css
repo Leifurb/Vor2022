@@ -1,0 +1,15 @@
+body {
+    background-color: white;
+}
+
+#invoiceList span{
+    display: inline-block;
+    width: 50%;
+}
+
+#invoiceList span::first-letter{
+    font-size: 2em;
+    font-weight: bold;
+    color: green;
+}
+

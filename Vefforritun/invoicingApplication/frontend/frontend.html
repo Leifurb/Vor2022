@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoicing Frontend</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <header>
+            <h1>Invoices</h1>
+    </header>
+
+    <main>
+        <div id="invoiceForm">
+            <form>
+                <label for="iNumber">Invoice number:</label><br>
+                <input type="text" id="iNumber" name="iNumber" value=""><br>
+                <label for="iToName">Invoiced To:</label><br>
+                <input type="text" id="iToName" name="iToName" value=""><br>
+                <label for="iByName">Invoiced By:</label><br>
+                <input type="text" id="iByName" name="iByName" value=""><br>
+                <label for="iAmount">Amount:</label><br>
+                <input type="number" id="iAmount" name="iAmount" value="0"><br><br>
+                <input type="button" value="Submit" onclick="newInvoice()">
+              </form> 
+        </div>
+        <div id="invoiceDiv">
+            <p>Your invoices:</p>
+            <div id="invoiceList">
+
+            </div>
+        </div>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
